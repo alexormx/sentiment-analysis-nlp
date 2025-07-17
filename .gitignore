@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Data files
+/data/
+*.csv
+*.tsv
+*.zip
+*.gz
+*.h5
+
+# Environments
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Logs and outputs
+*.log
+*.out
+*.tmp
+
+# MLflow artifacts
+mlruns/
+models/
