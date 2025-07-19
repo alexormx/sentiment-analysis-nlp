@@ -1,103 +1,123 @@
-# 🧠 Sentiment Analysis NLP – Deep Learning with TensorFlow
+# 🧠 Análisis de Sentimientos en Reseñas de Amazon (Deep Learning – NLP)
 
-Este proyecto forma parte del portafolio final del curso de AiLab y aborda un problema de **clasificación de sentimientos** usando **Deep Learning** aplicado a texto (NLP). El objetivo es **predecir si una reseña escrita por un usuario es positiva o negativa**, utilizando una arquitectura basada en redes neuronales.
-
----
-
-## 📂 Dataset Utilizado
-
-Usamos el dataset de reseñas de productos de Amazon (`amazon_reviews_us_Electronics`) disponible en AWS Open Datasets. Contiene **millones de reseñas** en texto plano con etiquetas de clasificación binaria (`1 = negativo`, `2 = positivo`).
-
-- 🔢 **Tamaño original:** ~3.6 millones de líneas
-- ✅ **Muestra utilizada:** 100,000 ejemplos
-- 📝 **Formato:** `__label__1` / `__label__2` seguido del texto
-
-**📌 Nota:** Por limitaciones de recursos y tiempos de entrenamiento, decidimos utilizar solo **100,000 ejemplos**, lo cual permite obtener resultados representativos sin comprometer rendimiento.
+Este proyecto utiliza Deep Learning con modelos de procesamiento de lenguaje natural (NLP) para clasificar reseñas de productos electrónicos de Amazon como **positivas** o **negativas**, basado en su contenido textual.
 
 ---
 
-## 📊 Análisis Exploratorio (EDA)
+## 📌 Objetivo del Proyecto
 
-- Distribución de clases:
-  - `1 (negativa)`: ~49%
-  - `2 (positiva)`: ~51%
-- Se verificó balance adecuado, no fue necesario aplicar técnicas de balanceo.
-- Se realizó limpieza del texto eliminando puntuación, mayúsculas, y palabras vacías (stopwords).
-- Se revisó la longitud de las reseñas para determinar un tamaño de secuencia apropiado (`maxlen=200`).
+Construir un clasificador robusto de sentimientos usando redes neuronales profundas (Keras + TensorFlow) para detectar automáticamente la polaridad (positiva/negativa) en reseñas de productos electrónicos, mejorando la capacidad de análisis automático de opiniones.
 
 ---
 
-## ⚙️ Preprocesamiento y Vectorización
-
-- Se utilizó `Tokenizer` de Keras con:
-  - `num_words=10000`
-  - `oov_token="<OOV>"`
-- Los textos fueron transformados a secuencias numéricas (`texts_to_sequences`)
-- Padding aplicado con `pad_sequences` (`maxlen=200`, `padding='post'`)
-- Etiquetas fueron transformadas de `[1,2]` a `[0,1]` para uso con `SparseCategoricalCrossentropy`.
-
----
-
-## 🧪 Próximos pasos (en siguientes notebooks)
-
-1. **Entrenamiento y validación**
-   - Red neuronal (embedding + LSTM/GRU o dense)
-   - Métricas: `Accuracy`, `F1-Score`
-2. **Evaluación y exportación**
-   - Resultados en test
-   - Exportación del modelo
-3. **MLflow Tracking**
-   - Registro de experimentos
-4. **Servicio Batch Prediction**
-   - Construcción de pipelines tipo “Pau Labarta”
-
----
-
-## 📌 Decisión sobre muestra de 100,000 ejemplos
-
-Decidimos limitar el número de ejemplos a **100,000** debido a:
-
-- Recursos limitados de memoria y GPU
-- Tiempo de entrenamiento razonable para pruebas iniciales
-- Resultados estadísticamente significativos con esta muestra
-
----
-
-## ✅ Conclusiones del EDA & Preprocesamiento
-
-- El dataset está relativamente balanceado.
-- La limpieza de texto mejora la calidad del modelo.
-- Un tamaño de secuencia de 200 es adecuado para cubrir más del 90% de los textos.
-- El tokenizer de Keras permite una vectorización eficiente con OOV handling.
-
----
-
-## 📁 Estructura del proyecto
+## 📁 Estructura del Proyecto
 ```bash
 📦 sentiment-analysis-nlp/
 │
-├── 01_eda_feature_pipeline.ipynb # Exploración y vectorización del texto
 ├── data/ # Datos crudos o limpios (ignorados por .gitignore)
+│ ├── clean_amazon_reviews_100k.csv # Dataset original limpiado
+│ ├── processed_data.npz # Features y labels tokenizados
+│ ├── processed_split.npz # Split de datos en train/test
+│ ├── tokenizer.pkl # Tokenizer serializado
+│ ├── train.ft.txt / test.ft.txt # Datos en formato FastText
+│
 ├── models/ # Modelos entrenados (pendiente)
-├── mlruns/ # Directorio de MLflow (pendiente)
+│ └── sentiment_model.keras # Modelo entrenado (.keras)
+│
+├── notebooks/
+│ ├── 01_eda_feature_pipeline.ipynb # Análisis exploratorio y estadísticas
+│ ├── 02_preprocessing.ipynb # Tokenización y limpieza
+│ ├── 03_training_pipeline.ipynb # Entrenamiento del modelo
+│ └── 04_evaluation_export.ipynb # Evaluación final + exportación
+│
+├── reports/
+│ └── predictions_results.csv # Resultados de predicción
+│
 ├── README.md # Este archivo
 ├── requirements.txt # Requisitos del proyecto
 └── .gitignore # Archivos a ignorar por Git
 ```
 ---
 
-## 🔧 Requisitos
+## 🔍 Descripción del Dataset
 
-Crea tu entorno y luego instala con:
+- Fuente: [Amazon Reviews – Electronics](https://registry.opendata.aws/amazon-reviews/)
+- Tamaño: 100,000 reseñas en inglés
+- Variables principales:
+  - `review_body`: Texto libre con la opinión del usuario.
+  - `star_rating`: Calificación de 1 a 5 estrellas.
+  - `sentiment`: Etiqueta binaria generada (`0 = Negativa`, `1 = Positiva`).
+
+---
+
+## 🔄 Flujo del Proyecto
+
+El flujo se basa en la metodología de **Pau Labarta** con tres pipelines clave:
+
+### 📘 1. Feature Pipeline (01_eda_feature_pipeline.ipynb)
+- Limpieza y balanceo de clases.
+- Estadísticas descriptivas y visuales (longitud de reseñas, frecuencia de palabras).
+- Gráficos: histogramas, densidades, boxplots, nubes de palabras.
+
+### 📙 2. Training Pipeline (03_training_pipeline.ipynb)
+- Tokenización con Keras y padding.
+- Arquitectura: Red neuronal con Embedding + capas Dense.
+- Entrenamiento del modelo con EarlyStopping.
+- Registro de experimentos con MLflow.
+
+### 📒 3. Batch Inference Pipeline (04_evaluation_export.ipynb)
+- Predicción sobre el conjunto de prueba.
+- Exportación de resultados (`predictions_results.csv`).
+- Evaluación con métricas de clasificación.
+
+---
+
+## 📊 Resultados y Métricas
+
+- **Accuracy final alcanzada**: `~91.97%`
+- **F1-score promedio ponderado**: `91.97%`
+- **Precisión (Precision)**: 91.12%
+- **Sensibilidad (Recall)**: 92.07%
+
+### 🔹 Matriz de Confusión
+
+|                 | Predicción Negativa | Predicción Positiva |
+|-----------------|---------------------|----------------------|
+| **Real Negativa** |       181,788        |        18,212         |
+| **Real Positiva** |       15,854         |        184,146        |
+
+El modelo muestra un **rendimiento equilibrado**, sin un sesgo fuerte hacia una de las clases, y un **buen nivel de recuperación y precisión** para ambas etiquetas. Este desempeño es adecuado para tareas de moderación automatizada o análisis de reputación de marca.
+
+---
+
+## 🛠️ Tecnologías Utilizadas
+
+- Python 3.10
+- TensorFlow / Keras
+- NumPy, Pandas, Matplotlib, Seaborn
+- Scikit-learn
+- MLflow (para seguimiento de experimentos)
+- Jupyter Notebooks
+- WSL + VSCode
+
+---
+
+## 📦 Requisitos
+
+Instala las dependencias:
 
 ```bash
 pip install -r requirements.txt
 ```
-## 🧰 Dependencias principales
+## 🧪 Ejecución
 
-- `pandas`
-- `numpy`
-- `tensorflow`
-- `scikit-learn`
-- `matplotlib`
+```
+# Entrenar desde notebook principal
+jupyter notebook notebooks/03_training_pipeline.ipynb
+```
+
 ---
+
+## 📝 Créditos
+
+Desarrollado por [@alexormx](https://github.com/alexormx) como parte del portafolio final de **AiLab** – Proyecto de clasificación binaria.
